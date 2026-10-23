@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#141a30">
+  <title>Mathematics Challenge Quiz</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202444;
+      --muted: #737995;
+      --purple: #6758e8;
+      --purple-dark: #5142d2;
+      --line: #e8eaf4;
+      --surface: #ffffff;
+      --background: #f5f7ff;
+      --green: #198b66;
+      --red: #cf5362;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #edf0ff;
+      --muted: #a6acc7;
+      --line: #343a59;
+      --surface: #202641;
+      --background: #141a30;
+      --green: #68d2a6;
+      --red: #ff8e9c;
+      background: radial-gradient(ellipse at 15% 0%, #302957 0, transparent 36%), var(--background);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: radial-gradient(ellipse at 15% 0%, #eeeaff 0, transparent 34%), var(--background);
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .site-header {
+      min-height: 76px;
+      padding: 0 clamp(20px, 6vw, 88px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgba(255,255,255,.82);
+      border-bottom: 1px solid rgba(226,228,241,.85);
+      backdrop-filter: blur(12px);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: clamp(12px, 1.8vw, 19px); letter-spacing: -.5px; }
+    .brand-mark {
+      width: 38px; height: 38px; display: grid; place-items: center; border-radius: 13px;
+      color: white; background: linear-gradient(145deg, #8174fb, #5849df); font-size: 20px;
+      box-shadow: 0 6px 14px #6758e83b;
+    }
+    .header-note { color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none; }
+    .header-note:hover { color: var(--purple); }
+    .header-controls { display: flex; align-items: center; gap: 14px; }
+    .theme-toggle { padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: var(--surface); font-size: 12px; font-weight: 750; white-space: nowrap; }
+
+    main { width: min(1120px, calc(100% - 40px)); margin: 48px auto 72px; }
+    .intro { text-align: center; margin: 0 auto 32px; }
+    .eyebrow { color: var(--purple); text-transform: uppercase; letter-spacing: 1.8px; font-size: 11px; font-weight: 800; }
+    h1 { margin: 11px 0 9px; font-size: clamp(32px, 5vw, 48px); line-height: 1.08; letter-spacing: -2px; }
+    .intro p { margin: 0; color: var(--muted); font-size: 16px; }
+
+    .name-gate { max-width: 560px; margin: 0 auto 25px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 12px 35px #28305910; }
+    .name-gate h2 { margin-bottom: 7px; }
+    .name-gate p { margin: 0 0 17px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .name-form { display: flex; gap: 10px; }
+    .name-input { min-width: 0; flex: 1; height: 46px; padding: 0 13px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: var(--surface); }
+    .name-input:focus { outline: 3px solid #8378ed33; border-color: #8378ed; }
+    .name-save { min-height: 46px; padding: 0 18px; border: 0; border-radius: 11px; color: white; background: var(--purple); font-weight: 750; }
+    .name-saved-at { margin-top: 12px; color: var(--muted); font-size: 12px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .session-panel { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; padding: 12px 14px; border-radius: 12px; color: var(--muted); background: #f7f7fc; font-size: 12px; }
+    .session-panel strong { color: var(--ink); }
+    body[data-theme="dark"] .session-panel { background: #171e35; }
+    .quiz-card[hidden], .topic-shell[hidden], .name-gate[hidden] { display: none; }
+
+    .topic-shell {
+      display: flex; gap: 8px; padding: 8px; margin: 0 auto 25px; width: fit-content; max-width: 100%;
+      overflow-x: auto; border: 1px solid var(--line); border-radius: 17px; background: var(--surface);
+      box-shadow: 0 8px 25px #3035620b; scrollbar-width: thin;
+    }
+    .topic-button {
+      flex: 0 0 auto; padding: 11px 16px; border: 0; border-radius: 11px; color: var(--muted);
+      background: transparent; font-size: 13px; font-weight: 700; transition: .18s ease;
+    }
+    .topic-button:hover { color: var(--purple); background: #f1efff; }
+    .topic-button.active { color: white; background: var(--purple); box-shadow: 0 5px 12px #6758e83a; }
+    .topic-button.exam { color: var(--purple); background: #f2f0ff; }
+    .topic-button.exam.active { color: white; background: var(--purple); }
+    .exam-launch { max-width: 850px; margin: -8px auto 20px; text-align: center; }
+    .exam-button { min-height: 46px; padding: 0 22px; border: 0; border-radius: 12px; color: #fff; background: linear-gradient(135deg, #8a7cff, #5a4bdd); box-shadow: 0 8px 20px #6758e83d; font-weight: 800; }
+    .exam-button:hover { filter: brightness(1.08); }
+
+    .quiz-card {
+      max-width: 850px; margin: 0 auto; overflow: hidden; background: var(--surface);
+      border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 18px 55px #28305910;
+    }
+    .quiz-top { padding: 25px 30px 19px; border-bottom: 1px solid #f0f1f7; }
+    .quiz-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    h2 { margin: 0; font-size: 21px; letter-spacing: -.5px; }
+    .question-count { padding: 7px 11px; border-radius: 30px; background: #f2f0ff; color: var(--purple); font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .quiz-hint { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .progress-track { height: 5px; margin-top: 19px; overflow: hidden; border-radius: 5px; background: #f0f1f7; }
+    .progress-fill { width: 0%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8275f9, #5949de); transition: width .25s ease; }
+
+    .questions { padding: 5px 30px 9px; }
+    .question-row { display: grid; grid-template-columns: 35px minmax(0, 1fr) 175px; align-items: center; gap: 12px; padding: 17px 0; border-bottom: 1px solid #f0f1f6; }
+    .question-row:last-child { border-bottom: 0; }
+    .question-number { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; color: #7368df; background: #f2f0ff; font-size: 12px; font-weight: 800; }
+    .question-text { font-size: 15px; font-weight: 650; line-height: 1.45; }
+    .question-text .math-expression { margin: 0 .08em; color: inherit; white-space: nowrap; }
+    .question-text .katex { font-size: 1.08em; }
+    .answer-wrap { position: relative; }
+    .answer-input { width: 100%; height: 43px; padding: 0 12px; color: var(--ink); border: 1px solid #dfe2ee; border-radius: 10px; outline: none; background: #fff; transition: .18s; }
+    .answer-input:focus { border-color: #8378ed; box-shadow: 0 0 0 3px #8378ed22; }
+    .answer-input::placeholder { color: #adb1c1; }
+    .question-row.correct .answer-input { border-color: #75c9ab; background: #f5fcf9; }
+    .question-row.incorrect .answer-input { border-color: #eaa2aa; background: #fff8f8; }
+    .question-row.correct .question-number { color: var(--green); background: #e7f7f0; }
+    .question-row.incorrect .question-number { color: var(--red); background: #fff0f1; }
+    .feedback { display: none; margin-top: 5px; color: var(--red); font-size: 11px; font-weight: 700; }
+    .question-row.incorrect .feedback { display: block; }
+    .question-row.correct .feedback { display: block; color: var(--green); }
+
+    .quiz-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 19px 30px 24px; border-top: 1px solid #f0f1f7; }
+    .result { min-height: 22px; color: var(--muted); font-size: 13px; font-weight: 650; }
+    .image-status { min-height: 18px; margin-top: 4px; color: var(--green); font-size: 12px; }
+    .result strong { color: var(--ink); }
+    .actions { display: flex; gap: 9px; }
+    .action-button { min-height: 43px; padding: 0 17px; border: 1px solid #e2e4ef; border-radius: 11px; color: #626984; background: white; font-size: 13px; font-weight: 750; transition: .18s; }
+    .action-button:hover { background: #f8f8fc; }
+    .action-button.primary { color: white; border-color: var(--purple); background: var(--purple); box-shadow: 0 5px 12px #6758e82e; }
+    .action-button.primary:hover { border-color: var(--purple-dark); background: var(--purple-dark); }
+    .action-button.save-image { color: var(--purple); border-color: #d9d5ff; background: #f5f3ff; }
+    .action-button:focus-visible, .topic-button:focus-visible { outline: 3px solid #a9a2ff; outline-offset: 2px; }
+    .footnote { margin: 17px auto 0; color: #9297ac; text-align: center; font-size: 12px; }
+
+    body[data-theme="dark"] { background: radial-gradient(ellipse at 15% 0%, #302957 0, transparent 36%), var(--background); }
+    body[data-theme="dark"] .site-header { background: #1b2239eF; border-color: var(--line); }
+    body[data-theme="dark"] .quiz-top, body[data-theme="dark"] .quiz-footer { border-color: var(--line); }
+    body[data-theme="dark"] .question-row { border-color: var(--line); }
+    body[data-theme="dark"] .answer-input, body[data-theme="dark"] .action-button { color: var(--ink); border-color: var(--line); background: #171e35; }
+    body[data-theme="dark"] .answer-input::placeholder { color: #858daa; }
+    body[data-theme="dark"] .action-button.primary { color: white; border-color: var(--purple); background: var(--purple); }
+    body[data-theme="dark"] .question-count, body[data-theme="dark"] .question-number { color: #c2bcff; background: #37315e; }
+    body[data-theme="dark"] .progress-track { background: #343a59; }
+    body[data-theme="dark"] .question-row.correct .question-number { color: #9bf1cc; background: #174738; }
+    body[data-theme="dark"] .question-row.incorrect .question-number { color: #ffb7bf; background: #532b3a; }
+    body[data-theme="dark"] .question-row.correct .answer-input { border-color: #3c9b79; background: #1b3a37; }
+    body[data-theme="dark"] .question-row.incorrect .answer-input { border-color: #b95867; background: #442b3a; }
+    body[data-theme="dark"] .topic-button:hover { color: #c2bcff; background: #37315e; }
+    body[data-theme="dark"] .topic-button.active { color: white; background: var(--purple); }
+    body[data-theme="dark"] .action-button:hover { background: #292f4a; }
+    body[data-theme="dark"] .action-button.save-image { color: #cec9ff; border-color: #514b83; background: #302b50; }
+
+    @media (max-width: 650px) {
+      main { width: min(100% - 24px, 540px); margin-top: 34px; }
+      .site-header { min-height: 66px; padding: 8px 12px; }
+      .header-note { display: none; }
+      .header-controls { gap: 6px; }
+      .brand { gap: 7px; font-size: 11px; }
+      .brand-mark { width: 32px; height: 32px; flex: 0 0 32px; }
+      .theme-toggle { padding: 8px; font-size: 11px; }
+      .name-gate { padding: 19px; }
+      .name-form { flex-direction: column; }
+      .name-save { width: 100%; }
+      .session-panel { flex-direction: column; gap: 7px; }
+      .topic-shell { width: 100%; border-radius: 14px; }
+      .topic-button { padding: 10px 13px; }
+      .quiz-top { padding: 21px 19px 16px; }
+      .questions { padding: 3px 19px 7px; }
+      .question-row { grid-template-columns: 32px minmax(0, 1fr); gap: 9px; padding: 15px 0; }
+      .question-text { font-size: 14px; }
+      .answer-wrap { grid-column: 2; }
+      .answer-input { height: 41px; }
+      .quiz-footer { align-items: flex-start; flex-direction: column; padding: 17px 19px 20px; }
+      .actions { width: 100%; }
+      .action-button { flex: 1; padding: 0 10px; }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="site-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">∑</span></div>
+    <div class="header-controls">
+      <div class="header-note">Little practice, big progress ✨</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <h1 id="page-title">Mpho Simon's Math Challenge</h1>
+      <p>Practise across every topic with longer, multi-step questions and exact mathematical notation.</p>
+    </section>
+
+    <section class="name-gate" id="name-gate" aria-labelledby="name-gate-title">
+      <h2 id="name-gate-title">Before you begin</h2>
+      <p>Enter your name and save it to unlock the practice topics and exam.</p>
+      <form class="name-form" id="name-form">
+        <label class="sr-only" for="learner-name">Your name</label>
+        <input class="name-input" id="learner-name" name="learner-name" type="text" maxlength="80" autocomplete="name" placeholder="Enter your name" required>
+        <button class="name-save" type="submit">Save name</button>
+      </form>
+    </section>
+
+    <div class="exam-launch" id="exam-launch" hidden><button class="exam-button" id="main-exam-button" type="button">Start Main Exam · 50 questions</button></div>
+    <nav class="topic-shell" id="topic-menu" aria-label="Math topics" hidden></nav>
+
+    <section class="quiz-card" id="quiz-card" aria-labelledby="quiz-title" hidden>
+      <div class="quiz-top">
+        <div class="quiz-title-row">
+          <h2 id="quiz-title">Percentages</h2>
+          <span class="question-count">10 questions</span>
+        </div>
+        <p class="quiz-hint">Type your answers, then check how you did.</p>
+        <div class="session-panel" id="session-panel" aria-live="polite"></div>
+        <div class="progress-track" aria-label="Answered questions"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+      <form id="quiz-form" autocomplete="off">
+        <div class="questions" id="questions"></div>
+        <div class="quiz-footer">
+          <div><div class="result" id="result" aria-live="polite">Ready when you are!</div><div class="image-status" id="image-status" aria-live="polite"></div></div>
+          <div class="actions">
+            <button class="action-button" id="new-quiz" type="button">↻ New questions</button>
+            <button class="action-button save-image" id="save-image" type="button" hidden>⬇ Save PNG result</button>
+            <button class="action-button primary" type="submit">Check answers</button>
+          </div>
+        </div>
+      </form>
+    </section>
+    <p class="footnote">Every new round gets a randomized set. You’ve got this!</p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script>
+    const topics = [
+      { id: "percentages", label: "Percentages", kinds: ["increase", "decrease", "reverse", "tax", "discount", "find"], make: makePercentage },
+      { id: "ratio", label: "Ratio", kinds: ["simplify", "increase", "decrease", "share", "reverse", "combine", "recipe", "map", "mixture", "team"], make: makeRatio },
+      { id: "fractions", label: "Fractions", kinds: ["simplify", "add", "increase", "decrease"], make: makeFraction },
+      { id: "word-sums", label: "Word sums", kinds: ["age", "addition", "times", "subtract", "divide", "measurement", "finance", "pattern", "building", "currency"], make: makeWordSum },
+      { id: "decimals", label: "Decimals", kinds: ["add", "subtract", "divide", "multiply", "increase", "decrease", "fraction", "percentage", "round-estimate", "interval"], make: makeDecimal },
+      { id: "integers", label: "Integers", kinds: ["calculate", "multiply", "divide", "powers-two", "powers-three"], make: makeInteger },
+      { id: "proportion", label: "Proportion", kinds: ["direct", "inverse"], make: makeProportion },
+      { id: "algebra-graphs", label: "Algebra & graphs", kinds: ["solve", "graph-value", "gradient", "substitution"], make: makeAlgebraGraph },
+      { id: "finance", label: "Finance", kinds: ["simple", "compound", "principal", "rate", "exchange", "budget", "shopping", "salary", "profit", "tax"], make: makeFinance },
+      { id: "probability", label: "Probability", kinds: ["fraction", "decimal", "percentage", "complement"], make: makeProbability },
+      { id: "statistics", label: "Statistics", kinds: ["mean", "median", "range", "mode"], make: makeStatistics },
+      { id: "measurements", label: "Measurements", kinds: ["square-perimeter", "square-area", "triangle-area", "triangle-perimeter", "rectangle-area", "rectangle-perimeter", "cube-surface", "cube-volume", "cuboid-surface", "cuboid-volume", "circle-area", "circumference", "cylinder-surface", "cylinder-volume", "sphere-surface", "sphere-volume"], make: makeMeasurement },
+      { id: "transformations", label: "Transformations", kinds: ["reflect", "rotate", "enlarge", "reduce", "translate"], make: makeTransformation },
+      { id: "pythagoras", label: "Pythagoras", kinds: ["hypotenuse", "missing-side"], make: makePythagoras },
+      { id: "main-exam", label: "Main Exam", isExam: true, questionCount: 50 }
+    ];
+
+    const topicMenu = document.querySelector("#topic-menu");
+    const examLaunch = document.querySelector("#exam-launch");
+    const questionsContainer = document.querySelector("#questions");
+    const quizTitle = document.querySelector("#quiz-title");
+    const quizForm = document.querySelector("#quiz-form");
+    const result = document.querySelector("#result");
+    const progressFill = document.querySelector("#progress-fill");
+    const nameGate = document.querySelector("#name-gate");
+    const nameForm = document.querySelector("#name-form");
+    const learnerNameInput = document.querySelector("#learner-name");
+    const quizCard = document.querySelector("#quiz-card");
+    const sessionPanel = document.querySelector("#session-panel");
+    const imageStatus = document.querySelector("#image-status");
+    const saveImageButton = document.querySelector("#save-image");
+    let currentTopic = topics.find((topic) => !topic.isExam);
+    let currentQuestions = [];
+    const questionBanks = new Map();
+    const questionBankSize = 500;
+    let checked = false;
+    let learnerName = "";
+    let nameSavedAt = null;
+    let quizStartedAt = null;
+    let quizFinishedAt = null;
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function pick(items) {
+      return items[randomInt(0, items.length - 1)];
+    }
+
+    function makePercentage(kind = pick(["increase", "decrease", "reverse", "tax", "discount", "find"])) {
+      const percent = pick([5, 10, 12, 15, 20, 25, 30, 40, 50, 60, 75]);
+      const value = randomInt(2, 80) * 10;
+      const money = randomInt(10, 500) + 0.99;
+      if (kind === "increase" || kind === "decrease") {
+        const adjustment = randomInt(5, 40) * 5;
+        const changed = value * (100 + (kind === "increase" ? percent : -percent)) / 100;
+        const answer = kind === "increase" ? changed - adjustment : changed + adjustment;
+        return { prompt: `A warehouse records ${value} units. The quantity is ${kind === "increase" ? "increased" : "decreased"} by ${percent}%, then ${adjustment} units are ${kind === "increase" ? "removed" : "added"} during a stock correction. How many units remain after both changes?`, answer: String(answer) };
+      }
+      if (kind === "reverse") {
+        const original = randomInt(2, 50) * 10;
+        const isIncrease = Math.random() < 0.5;
+        const adjustment = randomInt(2, 12) * 5;
+        const finalValue = original * (100 + (isIncrease ? percent : -percent)) / 100 + adjustment;
+        return { prompt: `A number is ${isIncrease ? "increased" : "decreased"} by ${percent}%, then ${adjustment} is added. The final result is ${finalValue}. Work backwards to find the original number before either change.`, answer: String(original) };
+      }
+      if (kind === "tax") {
+        const delivery = randomInt(5, 30) + 0.5;
+        return { prompt: `An online order contains an item priced at $${money.toFixed(2)}. A ${percent}% sales tax is applied to the item, then a $${delivery.toFixed(2)} delivery charge is added. Calculate the final amount paid to the nearest cent.`, answer: (money * (100 + percent) / 100 + delivery).toFixed(2) };
+      }
+      if (kind === "discount") {
+        const quantity = randomInt(2, 6);
+        const coupon = randomInt(3, 25) + 0.25;
+        return { prompt: `A store sells ${quantity} items at $${money.toFixed(2)} each. The whole purchase receives a ${percent}% discount, followed by a $${coupon.toFixed(2)} coupon. What is the final bill to the nearest cent?`, answer: (money * quantity * (100 - percent) / 100 - coupon).toFixed(2) };
+      }
+      const base = randomInt(20, 80) * 100;
+      return { prompt: `A school has ${base} learners. ${percent}% of them travel by bus, and then ${value / 10} additional learners join the bus group. How many learners are now in that group?`, answer: String(base * percent / 100 + value / 10) };
+    }
+
+    function makeRatio(kind = pick(["simplify", "increase", "decrease", "share", "reverse", "combine"])) {
+      const a = randomInt(2, 9);
+      const b = randomInt(2, 9);
+      if (kind === "recipe") {
+        const scale = randomInt(2, 6);
+        const extra = randomInt(2, 5);
+        const reduction = randomInt(1, Math.max(1, b * scale - 1));
+        return { prompt: `One smoothie batch uses ${a} cups of fruit and ${b} cups of yoghurt in a fixed ratio. Mpho makes ${scale} batches, then removes ${reduction} cups of yoghurt to adjust the taste. How many cups of yoghurt remain?`, answer: String(b * scale - reduction) };
+      }
+      if (kind === "map") {
+        const scale = randomInt(2, 8);
+        const distance = randomInt(3, 15);
+        const detour = randomInt(1, 5);
+        const printScale = pick([2, 5, 10]);
+        return { prompt: `On the original map, 1 cm represents ${scale} km. A road measured ${distance} cm on that map; a copy was then enlarged by a factor of ${printScale}, so the printed road now measures ${distance * printScale} cm. A marked detour adds ${detour} km. Find the actual detour route length in kilometres.`, answer: String(scale * distance + detour) };
+      }
+      if (kind === "mixture") {
+        const redParts = randomInt(1, 5);
+        const blueParts = randomInt(2, 6);
+        const partSize = randomInt(3, 12);
+        const removed = randomInt(1, blueParts * partSize - 1);
+        const total = (redParts + blueParts) * partSize;
+        return { prompt: `Paint is mixed in the ratio red:blue = ${redParts}:${blueParts}. A batch contains ${total} L, then ${removed} L of blue paint is used. How many litres of blue paint remain in the mixture?`, answer: String(blueParts * partSize - removed) };
+      }
+      if (kind === "team") {
+        const boys = randomInt(2, 7);
+        const girls = randomInt(3, 8);
+        const scale = randomInt(3, 9);
+        const absent = randomInt(1, girls * scale - 1);
+        return { prompt: `A robotics club has boys:girls in the ratio ${boys}:${girls}. When ${girls * scale} girls are registered, how many students are enrolled altogether? On competition day ${absent} girls are absent; how many students attend?`, answer: String((boys + girls) * scale - absent) };
+      }
+      if (kind === "increase" || kind === "decrease") {
+        const change = randomInt(1, 5);
+        const changed = kind === "increase" ? a + change : Math.max(1, a - change);
+        const divisor = greatestCommonDivisor(changed, b);
+        const redChange = kind === "increase" ? `Add ${change} red counters` : `Remove ${Math.min(change, a - 1)} red counters`;
+        return { prompt: `A box contains red and blue counters in the ratio ${a}:${b}. ${redChange}, while the blue count is unchanged. Find the new red:blue ratio and simplify it fully.`, answer: `${changed / divisor}:${b / divisor}` };
+      }
+      if (kind === "share") {
+        const scale = randomInt(3, 12);
+        const total = (a + b) * scale;
+        const fee = randomInt(1, Math.max(1, a * scale - 1));
+        return { prompt: `A prize of ${total} tokens is shared between two teams in the ratio ${a}:${b}. The first team then pays an administration fee of ${fee} tokens from its share. How many tokens does that team keep?`, answer: String(a * scale - fee) };
+      }
+      if (kind === "reverse") {
+        const scale = randomInt(2, 12);
+        const extra = randomInt(2, 15);
+        return { prompt: `The original ratio A:B is ${a}:${b}. The quantities are scaled up proportionally until A is ${a * scale}, then ${extra} units are added to B. What is the new value of B?`, answer: String(b * scale + extra) };
+      }
+      if (kind === "combine") {
+        const c = randomInt(2, 9);
+        const divisor = greatestCommonDivisor(a, c);
+        return { prompt: `Two recipes use ingredient ratios A:B = ${a}:${b} and B:C = ${b}:${c}. Align the shared B parts, determine A:C, and give the ratio in simplest form.`, answer: `${a / divisor}:${c / divisor}` };
+      }
+      const factor = randomInt(3, 12);
+      const common = randomInt(2, 8);
+      const divisor = greatestCommonDivisor(a, b);
+      return { prompt: `A blueprint gives a length-to-width ratio of ${a * factor * common}:${b * factor * common}. A revision scales both measurements down by a factor of ${factor}, then the architect reduces the ratio fully. State the final ratio in simplest form.`, answer: `${a / divisor}:${b / divisor}` };
+    }
+
+    function makeFraction(kind = pick(["simplify", "add", "increase", "decrease"])) {
+      const denominators = [3, 4, 5, 6, 8, 10, 12];
+      if (kind === "increase" || kind === "decrease") {
+        const denominator = pick([2, 3, 4, 5, 10]);
+        const numerator = randomInt(1, denominator - 1);
+        const value = randomInt(8, 35) * denominator;
+        const change = value * numerator / denominator;
+        const correction = randomInt(2, 12) * denominator;
+        const answer = kind === "increase" ? value + change - correction : value - change + correction;
+        return { prompt: `A water tank contains ${value} L. The amount is ${kind === "increase" ? "increased" : "decreased"} by ${numerator}/${denominator} of its current volume, then ${correction} L is ${kind === "increase" ? "drained" : "added"}. How many litres remain?`, answer: String(answer) };
+      }
+      if (kind === "add") {
+        const d1 = pick(denominators);
+        let d2 = pick(denominators);
+        while (d2 === d1) d2 = pick(denominators);
+        const n1 = randomInt(1, d1 - 1);
+        const n2 = randomInt(1, d2 - 1);
+        const n3 = randomInt(1, 5);
+        const d3 = pick([6, 8, 10, 12]);
+        const numerator = n1 * d2 * d3 + n2 * d1 * d3 + n3 * d1 * d2;
+        const denominator = d1 * d2 * d3;
+        const divisor = greatestCommonDivisor(Math.abs(numerator), denominator);
+        return { prompt: `A hiking route is ${n1}/${d1} of a kilometre long in the morning. In the afternoon the group walks ${n2}/${d2} km farther, then completes another ${n3}/${d3} km before stopping. Calculate the total distance walked and give your answer as a simplified fraction.`, answer: `${numerator / divisor}/${denominator / divisor}` };
+      }
+      const denominator = pick(denominators);
+      const numerator = randomInt(1, denominator - 1);
+      const multiplier = randomInt(4, 12);
+      const secondDenominator = pick(denominators);
+      const secondNumerator = randomInt(1, secondDenominator - 1);
+      const divisor = greatestCommonDivisor(numerator * multiplier, denominator * multiplier);
+      const resultNumerator = (numerator * multiplier / divisor) * (secondDenominator - secondNumerator) + (secondNumerator * (denominator * multiplier / divisor));
+      const resultDenominator = (denominator * multiplier / divisor) * secondDenominator;
+      const finalDivisor = greatestCommonDivisor(resultNumerator, resultDenominator);
+      return { prompt: `A recipe uses ${numerator * multiplier}/${denominator * multiplier} cup of oil. The baker adds another ${secondNumerator}/${secondDenominator} cup, then simplifies the total. How many cups of oil are used altogether? Give a simplified fraction.`, answer: `${resultNumerator / finalDivisor}/${resultDenominator / finalDivisor}` };
+    }
+
+    function makeWordSum(kind) {
+      const names = ["Ava", "Noah", "Mia", "Leo", "Zara", "Ethan", "Lina", "Sam"];
+      const a = randomInt(12, 85);
+      const b = randomInt(8, 45);
+      if (kind === "age") {
+        const age = randomInt(8, 45);
+        const years = randomInt(3, 12);
+        const cousinDifference = randomInt(2, 9);
+        return { prompt: `${pick(names)} is ${age} years old, which is ${cousinDifference} years younger than a cousin. In ${years} years, what will the sum of their ages be?`, answer: String(age + age + cousinDifference + 2 * years) };
+      }
+      if (kind === "times") {
+        const packs = randomInt(2, 12);
+        const pencils = randomInt(3, 10);
+        const loose = randomInt(4, 18);
+        const donated = randomInt(3, packs * pencils - 1);
+        return { prompt: `${pick(names)} buys ${packs} packs with ${pencils} pencils in each, then adds ${loose} loose pencils from a drawer. After donating ${donated} pencils to a classmate, how many pencils are left?`, answer: String(packs * pencils + loose - donated) };
+      }
+      if (kind === "addition") {
+        const days = randomInt(3, 6);
+        const extra = randomInt(15, 90);
+        return { prompt: `A recycling class collects ${a} cans on Monday and ${b} more than Monday on Tuesday. Over the next ${days - 2} days, they collect ${extra} cans each day. How many cans have they collected in total?`, answer: String(a + a + b + (days - 2) * extra) };
+      }
+      if (kind === "subtract") {
+        const remainingBeforeCraft = randomInt(4, 40) * 4;
+        return { prompt: `${pick(names)} starts with ${remainingBeforeCraft + b} beads and gives away ${b}. They then use one quarter of the remaining beads for a craft. How many beads are left?`, answer: String(remainingBeforeCraft * 3 / 4) };
+      }
+      if (kind === "divide") {
+        const groups = randomInt(2, 12);
+        const each = randomInt(3, 20);
+        const broken = randomInt(1, groups - 1) * each;
+        return { prompt: `A baker packs ${groups * each + broken} cookies equally into ${groups} boxes. Before packing, ${broken} cookies are found broken and removed. How many cookies go in each box?`, answer: String(each) };
+      }
+      if (kind === "measurement") {
+        const metres = randomInt(2, 12);
+        const extra = randomInt(10, 90);
+        const cut = randomInt(10, extra);
+        const secondCut = randomInt(5, 25);
+        return { prompt: `For a school art display, ${pick(names)} has a ribbon ${metres} m ${extra} cm long. They cut off ${cut} cm for a poster and use another ${secondCut} cm for a model. How many centimetres of ribbon remain?`, answer: String(metres * 100 + extra - cut - secondCut) };
+      }
+      if (kind === "finance") {
+        const weekly = randomInt(5, 40);
+        const weeks = randomInt(3, 12);
+        const spent = randomInt(5, weekly * weeks - 1);
+        const bonus = randomInt(10, 80);
+        const bonusWeeks = randomInt(1, weeks - 1);
+        return { prompt: `${pick(names)} saves $${weekly} each week for ${weeks} weeks. During ${bonusWeeks} of those weeks, they save an extra $${bonus}. They then spend $${spent} on supplies. How much money remains?`, answer: String(weekly * weeks + bonus * bonusWeeks - spent) };
+      }
+      if (kind === "pattern") {
+        const offset = randomInt(2, 12);
+        const position = randomInt(8, 20);
+        const terms = [1, 2, 3, 4].map((n) => n * n + offset * n);
+        return { prompt: `A sequence begins ${terms.join(", ")}, ... and has a constant second difference. Determine the quadratic rule, then use it to find term ${position}.`, answer: String(position * position + offset * position) };
+      }
+      if (kind === "building") {
+        const bricksPerRow = randomInt(8, 30);
+        const rows = randomInt(3, 12);
+        const spare = randomInt(2, 15);
+        const damaged = randomInt(2, 14);
+        return { prompt: `A builder plans a garden wall with ${rows} rows of ${bricksPerRow} bricks. They add ${spare} spare bricks, but ${damaged} bricks in the delivery are damaged and unusable. How many usable bricks arrive?`, answer: String(bricksPerRow * rows + spare - damaged) };
+      }
+      const dollars = randomInt(5, 80);
+      const cents = randomInt(10, 95);
+      const paid = randomInt(150, 300);
+      const costCents = dollars * 100 + cents;
+      const secondItemCents = randomInt(100, 2000);
+      return { prompt: `At a weekend market, ${pick(names)} buys a notebook for $${dollars}.${String(cents).padStart(2, "0")} and a snack for $${(secondItemCents / 100).toFixed(2)}. They pay with $${paid}. How much change do they receive, in cents?`, answer: String(paid * 100 - costCents - secondItemCents) };
+    }
+
+    function makeDecimal(kind) {
+      const a = (randomInt(101, 950) / 100).toFixed(2);
+      const b = (randomInt(101, 750) / 100).toFixed(2);
+      if (kind === "add") {
+        const c = (randomInt(101, 450) / 100).toFixed(2);
+        return { prompt: `A measuring jug contains ${a} L. A second jug contains ${b} L, and ${c} L more is poured in. How much liquid is there altogether? Give your answer to 2 decimal places.`, answer: (Number(a) + Number(b) + Number(c)).toFixed(2) };
+      }
+      if (kind === "subtract") {
+        const larger = Math.max(Number(a), Number(b));
+        const smaller = Math.min(Number(a), Number(b));
+        const differenceCents = Math.round((larger - smaller) * 100);
+        const refund = (randomInt(1, Math.max(1, Math.min(120, differenceCents - 1))) / 100).toFixed(2);
+        return { prompt: `A customer has ${larger.toFixed(2)} L of solution. They use ${smaller.toFixed(2)} L, then spill another ${refund} L. How much remains? Give your answer to 2 decimal places.`, answer: (larger - smaller - Number(refund)).toFixed(2) };
+      }
+      if (kind === "multiply") {
+        const discount = randomInt(5, 35);
+        return { prompt: `A fabric roll is ${a} m long. A workshop uses ${b} such rolls, then discards ${discount}% of the total length because of damaged material. How many metres of usable fabric remain? Round to 4 decimal places.`, answer: (Number(a) * Number(b) * (1 - discount / 100)).toFixed(4) };
+      }
+      if (kind === "divide") {
+        const divisor = randomInt(2, 20) / 10;
+        const quotient = randomInt(10, 900) / 100;
+        const extra = randomInt(1, 30) / 10;
+        const groups = randomInt(2, 8);
+        const amountPerContainer = divisor * quotient + extra;
+        return { prompt: `A total of ${(amountPerContainer * groups).toFixed(2)} L of juice is shared equally among ${groups} containers. Each container then loses ${divisor.toFixed(1)} L to a leak. How much juice remains in each container? Round to 2 decimal places.`, answer: (amountPerContainer - divisor).toFixed(2) };
+      }
+      if (kind === "increase" || kind === "decrease") {
+        const amount = (randomInt(kind === "decrease" ? 260 : 10, 500) / 100).toFixed(2);
+        const change = (randomInt(10, 250) / 100).toFixed(2);
+        const adjustment = (randomInt(5, 120) / 100).toFixed(2);
+        const changed = kind === "increase" ? Number(amount) + Number(change) : Number(amount) - Number(change);
+        return { prompt: `A measurement is ${amount}. ${kind === "increase" ? "Increase" : "Decrease"} it by ${change}, then ${kind === "increase" ? "subtract" : "add"} a further ${adjustment}. Give the final value to 2 decimal places.`, answer: (kind === "increase" ? changed - Number(adjustment) : changed + Number(adjustment)).toFixed(2) };
+      }
+      if (kind === "fraction") {
+        const value = randomInt(1, 99) / 100;
+        const divisor = greatestCommonDivisor(Math.round(value * 100), 100);
+        return { prompt: `Convert ${value.toFixed(2)} to a fraction in simplest form.`, answer: `${Math.round(value * 100) / divisor}/${100 / divisor}` };
+      }
+      if (kind === "percentage") {
+        const value = randomInt(1, 999) / 100;
+        return { prompt: `Convert ${value.toFixed(2)} to a percentage.`, answer: `${Number((value * 100).toFixed(2))}%` };
+      }
+      if (kind === "round-estimate") {
+        const first = (randomInt(101, 999) / 100).toFixed(2);
+        const second = (randomInt(101, 999) / 100).toFixed(2);
+        const roundTo = pick(["nearest whole number", "nearest tenth"]);
+        const place = roundTo === "nearest whole number" ? 1 : 10;
+        const estimate = Math.round(Number(first) / place) * place + Math.round(Number(second) / place) * place;
+        return { prompt: `Round ${first} and ${second} to the ${roundTo}, then estimate their sum.`, answer: String(Number(estimate.toFixed(roundTo === "nearest whole number" ? 0 : 1))) };
+      }
+      const roundedValue = (randomInt(10, 999) / 100).toFixed(2);
+      const place = pick(["nearest whole number", "nearest tenth"]);
+      const step = place === "nearest whole number" ? 1 : 0.1;
+      const center = Math.round(Number(roundedValue) / step) * step;
+      const halfStep = step / 2;
+      return { prompt: `${roundedValue} rounded to the ${place} represents a number x. Write its error interval using ≤ and <.`, answer: `${(center - halfStep).toFixed(place === "nearest whole number" ? 1 : 2)}≤x<${(center + halfStep).toFixed(place === "nearest whole number" ? 1 : 2)}` };
+    }
+
+    function makeInteger(kind = "calculate") {
+      if (kind === "powers-two" || kind === "powers-three") {
+        const base = kind === "powers-two" ? 2 : 3;
+        const exponent = kind === "powers-two" ? randomInt(2, 8) : randomInt(2, 5);
+        const otherA = randomInt(-9, 9) || -4;
+        const otherB = randomInt(-9, 9) || 5;
+        const finalTerm = randomInt(-12, 12) || -7;
+        const powered = base ** exponent;
+        const product = otherA * otherB;
+        return { prompt: `Evaluate ${base}^${exponent} + (${otherA}) × (${otherB}) − (${finalTerm}).`, answer: String(powered + product - finalTerm) };
+      }
+      const a = randomInt(-20, 20) || -6;
+      const c = randomInt(-12, 12) || 4;
+      const d = randomInt(-12, 12) || -3;
+      if (kind === "multiply") {
+        const b = randomInt(-9, 9) || 5;
+        const base = pick([2, 3]);
+        const exponent = randomInt(2, 4);
+        return { prompt: `Evaluate [(${a}) × (${b}) − (${c})] × (${d}) + ${base}^${exponent}. Apply the exponent first, then work through the brackets and multiplication.`, answer: String((a * b - c) * d + base ** exponent) };
+      }
+      if (kind === "divide") {
+        const divisor = randomInt(-6, 6) || 3;
+        const quotient = randomInt(-8, 8) || -4;
+        const dividend = divisor * quotient;
+        const exponent = randomInt(2, 4);
+        const poweredBase = pick([2, 3]);
+        return { prompt: `Evaluate (${dividend}) ÷ (${divisor}) + (${c}) × (${d}) − ${poweredBase}^${exponent}, applying the correct order of operations.`, answer: String(quotient + c * d - poweredBase ** exponent) };
+      }
+      const b = randomInt(-15, 15) || 7;
+      const e = randomInt(-8, 8) || -5;
+      const divisor = pick([2, 3, 4]);
+      const adjustedA = divisor * randomInt(-10, 10) - b;
+      const base = pick([2, 3]);
+      const exponent = randomInt(2, 4);
+      return { prompt: `Evaluate [(${adjustedA}) + (${b})] ÷ ${divisor} − (${c}) × (${d}) + (${e}) + ${base}^${exponent}, following the order of operations.`, answer: String((adjustedA + b) / divisor - c * d + e + base ** exponent) };
+    }
+
+    function makeMeasurement(kind) {
+      const roundTo2 = (value) => Number(value.toFixed(2));
+      if (kind === "square-perimeter" || kind === "square-area") {
+        const side = randomInt(4, 24);
+        return kind === "square-perimeter"
+          ? (() => { const gate = randomInt(1, 4); return { prompt: `A square garden has side length ${side} m and a gate ${gate} m wide. The remaining boundary is fenced with two parallel rows of wire. How many metres of wire are needed?`, answer: String((4 * side - gate) * 2) }; })()
+          : { prompt: `A square patio has side length ${side} m and is covered with square tiles of side 0.5 m. How many whole tiles are needed, ignoring cuts and wastage?`, answer: String(4 * side * side) };
+      }
+      if (kind === "triangle-area") {
+        const base = randomInt(4, 20) * 2;
+        const height = randomInt(3, 16);
+        const costPerSquareCm = randomInt(2, 8) / 2;
+        return { prompt: `A right-triangle sail has perpendicular dimensions ${base} cm and ${height} cm. Material costs $${costPerSquareCm.toFixed(2)} per cm². Calculate the area first, then the total material cost to the nearest cent.`, answer: (base * height / 2 * costPerSquareCm).toFixed(2) };
+      }
+      if (kind === "triangle-perimeter") {
+        const triples = [[3, 4, 5], [5, 12, 13], [6, 8, 10]];
+        const [base, height, diagonal] = pick(triples);
+        const scale = randomInt(1, 4);
+        const first = base * scale;
+        const second = height * scale;
+        const hypotenuse = diagonal * scale;
+        const entrance = randomInt(1, Math.max(1, first - 1));
+        return { prompt: `A right-triangular park has side lengths ${first} m, ${second} m and ${hypotenuse} m. A ${entrance} m entrance is left unfenced along the shortest side. How many metres of fencing are required around the rest of the boundary?`, answer: String(first + second + hypotenuse - entrance) };
+      }
+      if (kind === "rectangle-area" || kind === "rectangle-perimeter") {
+        const length = randomInt(5, 30);
+        const width = randomInt(3, 18);
+        if (kind === "rectangle-area") {
+          const cost = randomInt(12, 40) / 4;
+          return { prompt: `A rectangular classroom floor measures ${length} m by ${width} m. Flooring costs $${cost.toFixed(2)} per square metre. Find the floor area and calculate the total flooring cost.`, answer: (length * width * cost).toFixed(2) };
+        }
+        const gate = randomInt(1, Math.max(1, width - 1));
+        return { prompt: `A rectangular vegetable plot is ${length} m by ${width} m, but a ${gate} m-wide gate is left open. How many metres of edging are required around the rest of the perimeter?`, answer: String(2 * (length + width) - gate) };
+      }
+      if (kind === "cube-surface" || kind === "cube-volume") {
+        const side = randomInt(2, 12);
+        return kind === "cube-surface"
+          ? { prompt: `A cube-shaped gift box has edges ${side} cm long. It is wrapped on every face, with an extra 12% of paper allowed for overlaps and trimming. How many square centimetres of wrapping paper should be prepared, to 2 decimal places?`, answer: (6 * side * side * 1.12).toFixed(2) }
+          : { prompt: `A cube-shaped tank has internal edge length ${side} cm and is filled to 85% of its capacity. What volume of water does it contain, in cm³?`, answer: String(Number((side ** 3 * 0.85).toFixed(2))) };
+      }
+      if (kind === "cuboid-surface" || kind === "cuboid-volume") {
+        const length = randomInt(3, 15);
+        const width = randomInt(2, 10);
+        const height = randomInt(2, 9);
+        return kind === "cuboid-surface"
+          ? { prompt: `A rectangular aquarium is ${length} cm long, ${width} cm wide and ${height} cm high. How much glass is needed for all six faces?`, answer: String(2 * (length * width + length * height + width * height)) }
+          : { prompt: `A parcel box measures ${length} cm by ${width} cm by ${height} cm. It is filled to 80% of its capacity with packing material. What volume of the box is occupied?`, answer: String(length * width * height * 0.8) };
+      }
+      if (kind === "circle-area" || kind === "circumference") {
+        const radius = randomInt(2, 14);
+        const area = kind === "circle-area";
+        if (area) {
+          const borderWidth = randomInt(1, 4);
+          return { prompt: `A circular fountain has radius ${radius} m and is surrounded by a uniform paved border ${borderWidth} m wide. Find the area of the border only by subtracting the fountain area from the outer circle area. Use π = 3.14 and round to 2 decimal places.`, answer: roundTo2(3.14 * ((radius + borderWidth) ** 2 - radius ** 2)).toFixed(2) };
+        }
+        const laps = randomInt(3, 8);
+        return { prompt: `A runner completes ${laps} laps around a circular track of radius ${radius} m. Find the total distance run. Use π = 3.14 and round to 2 decimal places.`, answer: roundTo2(laps * 2 * 3.14 * radius).toFixed(2) };
+      }
+      if (kind === "cylinder-surface" || kind === "cylinder-volume") {
+        const radius = randomInt(2, 10);
+        const height = randomInt(5, 20);
+        const surface = kind === "cylinder-surface";
+        const measure = surface ? 2 * 3.14 * radius * (radius + height) : 3.14 * radius * radius * height;
+        const multiplier = surface ? randomInt(1, 4) : pick([0.65, 0.75, 0.8, 0.9]);
+        const answer = surface ? measure * multiplier : measure * multiplier;
+        return { prompt: surface
+          ? `A cylindrical tank has radius ${radius} m and height ${height} m. Its entire outer surface, including top and bottom, must be painted with ${multiplier} coats. Find the total area painted, using π = 3.14 and rounding to 2 decimal places.`
+          : `A cylindrical tank has radius ${radius} m and height ${height} m, but it is only ${(multiplier * 100).toFixed(0)}% full. Find the volume of water it contains, using π = 3.14 and rounding to 2 decimal places.`, answer: roundTo2(answer).toFixed(2) };
+      }
+      const radius = randomInt(2, 10);
+      const surface = kind === "sphere-surface";
+      const measure = surface ? 4 * 3.14 * radius * radius : (4 / 3) * 3.14 * radius ** 3;
+      if (surface) {
+        const spheres = randomInt(2, 5);
+        return { prompt: `A set of ${spheres} identical spherical ornaments each has radius ${radius} cm. Calculate the total surface area that must be coated, using π = 3.14 and rounding to 2 decimal places.`, answer: roundTo2(measure * spheres).toFixed(2) };
+      }
+      const count = randomInt(2, 4);
+      return { prompt: `A container is filled by melting ${count} identical spherical balls, each with radius ${radius} cm. Find the total volume of liquid produced, assuming no material is lost. Use π = 3.14 and round to 2 decimal places.`, answer: roundTo2(measure * count).toFixed(2) };
+    }
+
+    function makeTransformation(kind) {
+      const vertexLabels = ["A", "B", "C"];
+      const triangle = true;
+      const scale = randomInt(2, 3);
+      const shrinkInputScale = kind === "reduce" ? scale : 1;
+      const point = () => [randomInt(-5, 5) * shrinkInputScale, randomInt(-5, 5) * shrinkInputScale];
+      const labels = triangle ? vertexLabels : [pick(["P", "Q", "R"])];
+      let points = [point()];
+      if (triangle) {
+        let areaTwice = 0;
+        do {
+          points = vertexLabels.map(() => point());
+          const [[ax, ay], [bx, by], [cx, cy]] = points;
+          areaTwice = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+        } while (areaTwice === 0);
+      }
+      const turns = pick([1, 2, 3]);
+      const angle = turns * 90;
+      let dx = randomInt(-5, 5);
+      let dy = randomInt(-5, 5);
+      if (dx === 0 && dy === 0) dx = 1;
+      let transform;
+      if (kind === "reflect") {
+        const axis = pick(["x-axis", "y-axis"]);
+        transform = ([x, y]) => axis === "x-axis" ? [x, -y] : [-x, y];
+        kind = `reflect in the ${axis}`;
+      } else if (kind === "rotate") {
+        transform = ([x, y]) => turns === 1 ? [-y, x] : turns === 2 ? [-x, -y] : [y, -x];
+        kind = `rotate ${angle}° anticlockwise about the origin`;
+      } else if (kind === "enlarge" || kind === "reduce") {
+        const factor = kind === "reduce" ? 1 / scale : scale;
+        transform = ([x, y]) => [x * factor, y * factor];
+        kind = `${kind === "reduce" ? "reduce" : "enlarge"} from the origin by scale factor ${kind === "reduce" ? `1/${scale}` : scale}`;
+      } else {
+        transform = ([x, y]) => [x + dx, y + dy];
+        const horizontal = dx < 0 ? `${Math.abs(dx)} unit${Math.abs(dx) === 1 ? "" : "s"} left` : `${dx} unit${dx === 1 ? "" : "s"} right`;
+        const vertical = dy < 0 ? `${Math.abs(dy)} unit${Math.abs(dy) === 1 ? "" : "s"} down` : `${dy} unit${dy === 1 ? "" : "s"} up`;
+        kind = `move ${triangle ? "each vertex" : "the point"} ${horizontal} and ${vertical}`;
+      }
+      const secondDx = randomInt(-4, 4) || 2;
+      const secondDy = randomInt(-4, 4) || -2;
+      const firstTransform = transform;
+      transform = (coordinates) => {
+        const [x, y] = firstTransform(coordinates);
+        return [x + secondDx, y + secondDy];
+      };
+      const original = points.map((coordinates, index) => `${labels[index]}(${coordinates.join(",")})`).join(", ");
+      const image = points.map((coordinates, index) => `${labels[index]}′(${transform(coordinates).map((coordinate) => Number(coordinate.toFixed(2))).join(",")})`).join(", ");
+      return { prompt: `On a coordinate grid, triangle ${labels.join("")} has vertices ${original}. First ${kind}. Then translate the resulting image ${Math.abs(secondDx)} units ${secondDx < 0 ? "left" : "right"} and ${Math.abs(secondDy)} units ${secondDy < 0 ? "down" : "up"}. Give all final image vertices in the same order.`, answer: image };
+    }
+
+    function makePythagoras(kind) {
+      const triples = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [9, 40, 41]];
+      const scale = randomInt(1, 100);
+      const [shortLeg, longLeg, hypotenuse] = pick(triples).map((side) => side * scale);
+      if (kind === "hypotenuse") {
+        const extraGround = randomInt(10, 50) * scale;
+        return { prompt: `A right-angled wheelchair ramp rises ${shortLeg} mm and extends ${longLeg} mm horizontally. A safety cable follows the ramp slope and continues ${extraGround} mm along the ground to an anchor. First find the ramp's sloping length using Pythagoras, then calculate the total cable length.`, answer: String(hypotenuse + extraGround) };
+      }
+      const missingSide = Math.random() < 0.5 ? shortLeg : longLeg;
+      const knownSide = missingSide === shortLeg ? longLeg : shortLeg;
+      return { prompt: `A rectangular display has a diagonal of ${hypotenuse} mm and a height of ${knownSide} mm. Use Pythagoras' theorem to find its exact width, then calculate the total framing needed around all four edges.`, answer: String(2 * (knownSide + missingSide)) };
+    }
+
+    function makeProportion(kind = pick(["direct", "inverse"])) {
+      if (kind === "direct") {
+        const unitPrice = randomInt(2, 15);
+        const quantity = randomInt(2, 9);
+        const target = quantity * randomInt(2, 5);
+        const discount = pick([5, 10, 15, 20]);
+        const delivery = randomInt(3, 15);
+        return { prompt: `${quantity} notebooks cost $${quantity * unitPrice}. The cost of notebooks is directly proportional to quantity. A school orders ${target} notebooks, receives a ${discount}% bulk discount, and pays a fixed $${delivery} delivery fee. What is the total cost?`, answer: String(Number((target * unitPrice * (1 - discount / 100) + delivery).toFixed(2))) };
+      }
+      const workers = randomInt(2, 8);
+      const teamMultiplier = randomInt(2, 4);
+      const newWorkers = workers * teamMultiplier;
+      const daysWorked = randomInt(1, 4) * teamMultiplier;
+      const remainingDays = randomInt(2, 8);
+      const days = daysWorked + remainingDays * teamMultiplier;
+      const totalWork = workers * days;
+      return { prompt: `${workers} workers can finish a project in ${days} days. After working together for ${daysWorked} days, a larger crew of ${newWorkers} workers takes over. Assuming equal work rates and that the completed work is not repeated, how many additional days will the new crew need to finish the project?`, answer: String((totalWork - workers * daysWorked) / newWorkers) };
+    }
+
+    function makeAlgebraGraph(kind) {
+      if (kind === "substitution") {
+        const a = randomInt(2, 9);
+        const b = randomInt(2, 9);
+        const c = randomInt(2, 9);
+        const d = randomInt(1, 7);
+        const x = randomInt(-5, 5);
+        const y = randomInt(-5, 5);
+        const z = randomInt(-5, 5);
+        const value = a * x ** 2 + b * y - c * z + d;
+        return { prompt: `A model is defined by E = ${a}x^2 + ${b}y − ${c}z + ${d}. Given x=${x}, y=${y}, and z=${z}, evaluate E carefully, applying the exponent before the multiplication.`, answer: String(value) };
+      }
+      if (kind === "solve") {
+        const x = randomInt(-12, 20);
+        const coefficient = randomInt(2, 9);
+        const rightCoefficient = randomInt(1, coefficient - 1);
+        const bracket = randomInt(-9, 9) || 4;
+        const rightConstant = coefficient * (x + bracket) - rightCoefficient * x;
+        return { prompt: `Solve ${coefficient}(x ${bracket < 0 ? "− " + Math.abs(bracket) : "+ " + bracket}) = ${rightCoefficient}x ${rightConstant < 0 ? "− " + Math.abs(rightConstant) : "+ " + rightConstant} for x. Expand both sides first and collect like terms.`, answer: String(x) };
+      }
+      if (kind === "graph-value") {
+        const gradient = randomInt(-5, 7);
+        const intercept = randomInt(-10, 10);
+        const x = randomInt(-6, 8);
+        const secondX = x + randomInt(2, 5);
+        const secondY = gradient * secondX + intercept;
+        const targetX = randomInt(-8, 9);
+        return { prompt: `A straight-line graph passes through P(${x}, ${gradient * x + intercept}) and Q(${secondX}, ${secondY}). Determine its gradient and y-intercept, then calculate the value of y when x = ${targetX}.`, answer: String(gradient * targetX + intercept) };
+      }
+      const gradient = randomInt(-8, 8) || 3;
+      const x1 = randomInt(-8, 4);
+      const x2 = x1 + randomInt(2, 8);
+      const intercept = randomInt(-10, 10);
+      const y1 = gradient * x1 + intercept;
+      const y2 = gradient * x2 + intercept;
+      const x3 = x1 + randomInt(1, 4);
+      const error = pick([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]);
+      const y3 = gradient * x3 + intercept + error;
+      return { prompt: `Three measurements from a plotted line are A(${x1}, ${y1}) and B(${x2}, ${y2}); a third recorded point is C(${x3}, ${y3}). One point may contain a recording error. Use the pair that lies on the same straight line and find the gradient.`, answer: String(gradient) };
+    }
+
+    function makeFinance(kind) {
+      const principal = randomInt(2, 30) * 100;
+      const rate = pick([2, 3, 4, 5, 6, 8, 10]);
+      const years = randomInt(2, 6);
+      if (kind === "simple") {
+        const interest = principal * rate * years / 100;
+        const fee = randomInt(1, Math.max(1, Math.floor(interest) - 1));
+        return { prompt: `A principal of $${principal} is invested at ${rate}% simple interest per year for ${years} years. An account fee of $${fee} is deducted from the interest earned. Find the net interest, excluding the original deposit.`, answer: (interest - fee).toFixed(2) };
+      }
+      if (kind === "compound") {
+        const amount = principal * (1 + rate / 100) ** years;
+        const simpleAmount = principal * (1 + rate * years / 100);
+        return { prompt: `An investment of $${principal} earns ${rate}% per year for ${years} years. Compare annual compounding with simple interest: by how much does the compound final balance exceed the simple-interest final balance? Round to the nearest cent.`, answer: (amount - simpleAmount).toFixed(2) };
+      }
+      if (kind === "principal") {
+        const unknownPrincipal = randomInt(2, 30) * 100;
+        const interest = unknownPrincipal * rate * years / 100;
+        return { prompt: `A savings account earns $${interest.toFixed(2)} simple interest at ${rate}% per year over ${years} years. What was the original principal?`, answer: unknownPrincipal.toFixed(2) };
+      }
+      if (kind === "rate") {
+        const unknownRate = pick([2, 3, 4, 5, 6, 8, 10]);
+        const interest = principal * unknownRate * years / 100;
+        return { prompt: `An investment of $${principal} earns $${interest.toFixed(2)} simple interest in ${years} years. What was the annual interest rate? Give a percentage.`, answer: `${unknownRate}%` };
+      }
+      if (kind === "exchange") {
+        const foreignAmount = randomInt(20, 500);
+        const exchangeRate = pick([0.65, 0.72, 0.85, 1.1, 1.25, 1.5, 18.2]);
+        const fee = randomInt(1, 5);
+        return { prompt: `Mpho is travelling and exchanges $${foreignAmount} at a rate of 1 dollar = ${exchangeRate} units of local currency. The exchange desk charges a ${fee}% fee on the converted amount. How many units of local currency does Mpho receive? Round to 2 decimal places.`, answer: (foreignAmount * exchangeRate * (1 - fee / 100)).toFixed(2) };
+      }
+      if (kind === "budget") {
+        const weeklyBudget = randomInt(120, 300);
+        const transport = randomInt(10, 35);
+        const food = randomInt(15, 50);
+        const weeks = randomInt(2, 5);
+        const bookingFee = randomInt(25, 120);
+        return { prompt: `Mpho plans a ${weeks}-week trip with a weekly budget of $${weeklyBudget}. Each week they spend $${transport} on transport and $${food} on food; before travelling, they also pay a one-off booking fee of $${bookingFee}. How much remains from the total trip budget?`, answer: ((weeklyBudget - transport - food) * weeks - bookingFee).toFixed(2) };
+      }
+      if (kind === "shopping") {
+        const price = randomInt(15, 90) + 0.99;
+        const discount = pick([10, 15, 20, 25, 30]);
+        const quantity = randomInt(2, 5);
+        const delivery = randomInt(3, 12) + 0.99;
+        const total = price * quantity * (1 - discount / 100) + delivery;
+        return { prompt: `A sports shop sells backpacks for $${price.toFixed(2)} each. A ${discount}% sale applies when Mpho buys ${quantity}; delivery costs $${delivery.toFixed(2)}. What is the total bill?`, answer: total.toFixed(2) };
+      }
+      if (kind === "salary") {
+        const hours = randomInt(20, 40);
+        const hourlyRate = randomInt(12, 28) + 0.5;
+        const extraHours = randomInt(2, 8);
+        const overtimeRate = hourlyRate * 1.5;
+        return { prompt: `Mpho works ${hours} regular hours at $${hourlyRate.toFixed(2)} per hour, plus ${extraHours} overtime hours paid at time-and-a-half. What is the total pay before deductions?`, answer: (hours * hourlyRate + extraHours * overtimeRate).toFixed(2) };
+      }
+      if (kind === "profit") {
+        const cost = randomInt(20, 100);
+        const units = randomInt(5, 20);
+        const selling = cost + randomInt(5, 30);
+        const expenses = randomInt(10, 60);
+        const unsold = randomInt(1, units - 1);
+        const discount = randomInt(1, selling - cost);
+        return { prompt: `Mpho buys ${units} handmade items for $${cost} each. ${unsold} remain unsold, while every sold item is discounted by $${discount} from its planned $${selling} price. After paying $${expenses} in stall fees, calculate the overall profit or loss.`, answer: String((units - unsold) * (selling - discount) - units * cost - expenses) };
+      }
+      const price = randomInt(40, 250) + 0.99;
+      const taxRate = pick([5, 8, 10, 12, 15]);
+      const discountRate = pick([5, 10, 15, 20]);
+      return { prompt: `A jacket marked $${price.toFixed(2)} is reduced by ${discountRate}%, then ${taxRate}% sales tax is added to the sale price. What is the final amount paid?`, answer: (price * (1 - discountRate / 100) * (1 + taxRate / 100)).toFixed(2) };
+    }
+
+    function makeStatistics(kind) {
+      const length = randomInt(7, 11);
+      const values = Array.from({ length }, () => randomInt(8, 45));
+      if (kind === "mode") {
+        const uniqueValues = new Set(values);
+        while (uniqueValues.size < values.length) {
+          uniqueValues.clear();
+          while (uniqueValues.size < values.length) uniqueValues.add(randomInt(1, 30));
+        }
+        values.splice(0, values.length, ...uniqueValues);
+        const frequency = randomInt(3, 4);
+        values.splice(values.length - 1, 0, ...Array(frequency - 1).fill(values[0]));
+      }
+      const sorted = [...values].sort((a, b) => a - b);
+      const label = pick(["minutes spent reading", "goals scored in games", "daily step counts in hundreds", "books read this term"]);
+      if (kind === "mean") {
+        const sum = values.reduce((total, value) => total + value, 0);
+        const replacement = randomInt(10, 35);
+        const newMean = (sum - values[0] + replacement) / length;
+        return { prompt: `A student records ${label}: ${values.join(", ")}. One value was entered incorrectly: ${values[0]} should have been ${replacement}. Correct the data and calculate the new mean to 2 decimal places.`, answer: newMean.toFixed(2) };
+      }
+      if (kind === "median") {
+        const added = randomInt(10, 45);
+        const completeSet = [...values, added].sort((a, b) => a - b);
+        const middle = Math.floor(completeSet.length / 2);
+        const median = completeSet.length % 2 ? completeSet[middle] : (completeSet[middle - 1] + completeSet[middle]) / 2;
+        return { prompt: `The ${label} recorded for a group are ${values.join(", ")}. A late entry of ${added} is included, so the full data set must be reordered before analysis. Find the median of all the data.`, answer: String(median) };
+      }
+      if (kind === "range") {
+        const removed = sorted[0];
+        const newRange = sorted[sorted.length - 1] - sorted[1];
+        return { prompt: `A coach records ${label}: ${values.join(", ")}. The smallest recorded value, ${removed}, is found to be an equipment error and removed. What is the range of the corrected data?`, answer: String(newRange) };
+      }
+      const mode = values[0];
+      const repeatedValues = values.filter((value) => value === mode).length;
+      return { prompt: `A survey records ${label}: ${values.join(", ")}. The mode is reported by frequency, not by the numerical size of a value. Identify the unique mode and state how many times it occurs.`, answer: `${mode} (${repeatedValues} times)` };
+    }
+
+    function makeProbability(kind) {
+      const total = randomInt(4, 20);
+      const favorable = randomInt(1, total - 1);
+      const other = total - favorable;
+      const bothFavorable = favorable * (favorable - 1);
+      const allOutcomes = total * (total - 1);
+      const numeratorAtLeastOne = allOutcomes - other * (other - 1);
+      const divisor = greatestCommonDivisor(bothFavorable, allOutcomes) || 1;
+      const decimal = (numeratorAtLeastOne / allOutcomes).toFixed(2);
+      if (kind === "fraction") return { prompt: `A bag contains ${favorable} blue counters and ${other} red counters. Two counters are drawn one after the other without replacement. What is the probability that both counters are blue? Give a simplified fraction.`, answer: `${bothFavorable / divisor}/${allOutcomes / divisor}` };
+      if (kind === "decimal") return { prompt: `A bag contains ${favorable} green counters and ${other} yellow counters. Two counters are drawn without replacement. What is the probability that at least one is green? Give a decimal to 2 decimal places.`, answer: decimal };
+      if (kind === "percentage") return { prompt: `A box contains ${favorable} winning tickets and ${other} losing tickets. Two tickets are drawn without replacement. What is the probability that at least one ticket wins? Give a percentage to 2 decimal places.`, answer: `${Number((numeratorAtLeastOne / allOutcomes * 100).toFixed(2))}%` };
+      const neitherFavorable = other * (other - 1);
+      const otherDivisor = greatestCommonDivisor(neitherFavorable, allOutcomes) || 1;
+      return { prompt: `A jar has ${favorable} yellow beads and ${other} purple beads. Two beads are drawn without replacement. What is the probability that neither bead is yellow? Give a simplified fraction.`, answer: `${neitherFavorable / otherDivisor}/${allOutcomes / otherDivisor}` };
+    }
+
+    function greatestCommonDivisor(a, b) {
+      return b === 0 ? a : greatestCommonDivisor(b, a % b);
+    }
+
+    function normalizeAnswer(value) {
+      return value.trim().toLowerCase().replace(/\s+/g, "").replace(/,/g, ".");
+    }
+
+    function answersMatch(entered, expected) {
+      if (!entered.trim()) return false;
+      const normalizedEntered = normalizeAnswer(entered);
+      const normalizedExpected = normalizeAnswer(expected);
+      if (normalizedEntered === normalizedExpected) return true;
+      const normalizeCoordinates = (value) => value.replace(/[′']/g, "'").replace(/[()]/g, "");
+      if (normalizedExpected.includes("′")) return normalizeCoordinates(entered).replace(/,/g, "") === normalizeCoordinates(expected).replace(/,/g, "");
+      if (normalizedExpected.endsWith("%") && !normalizedEntered.endsWith("%")) {
+        if (Number(normalizedEntered) === Number(normalizedExpected.slice(0, -1))) return true;
+      }
+      const asNumber = (value) => {
+        if (value.endsWith("%")) return Number(value.slice(0, -1)) / 100;
+        if (/^-?\d+(?:\.\d+)?\/-?\d+(?:\.\d+)?$/.test(value)) {
+          const [numerator, denominator] = value.split("/").map(Number);
+          return denominator === 0 ? NaN : numerator / denominator;
+        }
+        return Number(value);
+      };
+      const enteredNumber = asNumber(normalizedEntered);
+      const expectedNumber = asNumber(normalizedExpected);
+      return Number.isFinite(enteredNumber) && Number.isFinite(expectedNumber) && Math.abs(enteredNumber - expectedNumber) < 0.0000001;
+    }
+
+    function renderTopics() {
+      topicMenu.innerHTML = "";
+      topics.filter((topic) => !topic.isExam).forEach((topic) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `topic-button${topic.id === currentTopic.id ? " active" : ""}`;
+        button.textContent = topic.label;
+        button.setAttribute("aria-pressed", String(topic.id === currentTopic.id));
+        button.addEventListener("click", () => {
+          currentTopic = topic;
+          renderTopics();
+          generateQuiz();
+        });
+        topicMenu.append(button);
+      });
+    }
+
+    function generateQuiz() {
+      if (!learnerName) return;
+      checked = false;
+      quizStartedAt = Date.now();
+      quizFinishedAt = null;
+      saveImageButton.hidden = true;
+      imageStatus.textContent = "";
+      quizTitle.textContent = currentTopic.label;
+      result.textContent = "Ready when you are!";
+      progressFill.style.width = "0%";
+      questionsContainer.innerHTML = "";
+      const questionCount = currentTopic.questionCount || 10;
+      document.querySelector(".question-count").textContent = `${questionCount} questions`;
+      document.querySelector(".quiz-hint").textContent = currentTopic.isExam
+        ? `Random ${questionCount} questions from the topic banks. Enter your answers, then check your score.`
+        : `Randomly selected ${questionCount} questions from a ${questionBankSize}-question bank. Enter your answers, then check your score.`;
+      let previousSignature = null;
+      try {
+        previousSignature = localStorage.getItem(`number-nest-${currentTopic.id}`);
+      } catch {
+        // The quiz still works when browser storage is unavailable.
+      }
+
+      let signature;
+      do {
+        currentQuestions = currentTopic.isExam
+          ? buildExamQuestions(questionCount)
+          : buildTopicQuestions(currentTopic, questionCount);
+        signature = currentQuestions.map((question) => question.prompt).join("||");
+      } while (signature === previousSignature);
+
+      try {
+        localStorage.setItem(`number-nest-${currentTopic.id}`, signature);
+      } catch {
+        // Ignore storage restrictions; random generation continues normally.
+      }
+
+      currentQuestions.forEach((question, index) => {
+        const row = document.createElement("div");
+        row.className = "question-row";
+        row.dataset.index = String(index);
+        const number = document.createElement("span");
+        number.className = "question-number";
+        number.textContent = String(index + 1).padStart(2, "0");
+        const label = document.createElement("label");
+        label.className = "question-text";
+        label.htmlFor = `answer-${index}`;
+        renderQuestionMath(label, question.prompt);
+        const answerWrap = document.createElement("div");
+        answerWrap.className = "answer-wrap";
+        const input = document.createElement("input");
+        input.className = "answer-input";
+        input.id = `answer-${index}`;
+        input.name = `answer-${index}`;
+        input.type = "text";
+        input.inputMode = "decimal";
+        input.placeholder = "Your answer";
+        input.setAttribute("aria-label", `Answer to question ${index + 1}`);
+        const feedback = document.createElement("div");
+        feedback.className = "feedback";
+        answerWrap.append(input, feedback);
+        row.append(number, label, answerWrap);
+        questionsContainer.append(row);
+      });
+      updateProgress();
+      updateSessionPanel();
+    }
+
+    function formatDateTime(timestamp) {
+      return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(timestamp));
+    }
+
+    function formatDuration(milliseconds) {
+      const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return [hours, minutes, seconds].map((part) => String(part).padStart(2, "0")).join(":");
+    }
+
+    function updateSessionPanel() {
+      if (!learnerName || !quizStartedAt) return;
+      const items = [
+        ["Learner", learnerName],
+        ["Name saved", formatDateTime(nameSavedAt)],
+        ["Quiz started", formatDateTime(quizStartedAt)],
+        ["Time taken", formatDuration((quizFinishedAt || Date.now()) - quizStartedAt)],
+        ["Finished", quizFinishedAt ? formatDateTime(quizFinishedAt) : "In progress"]
+      ];
+      sessionPanel.replaceChildren(...items.map(([label, value]) => {
+        const item = document.createElement("span");
+        const strong = document.createElement("strong");
+        strong.textContent = `${label}: `;
+        item.append(strong, document.createTextNode(value));
+        return item;
+      }));
+    }
+
+    function buildTopicQuestions(topic, count) {
+      return drawRandomQuestions(getQuestionBank(topic), count);
+    }
+
+    function renderQuestionMath(element, text) {
+      const expressionPattern = /(?:[a-z]\s*=\s*[+-]?(?:\d+\s*)?[a-z]?(?:\s*[+−-]\s*[+-]?(?:\d+\s*)?[a-z]?)?(?:\s*[+−-]\s*\d+)?(?![A-Za-z])|(?<![A-Za-z])\d+\s*\^\s*-?\d+(?!\w)|(?<![\w:])\d+\s*\/\s*\d+(?!\w)|(?<![A-Za-z])(?:-?\d+\s*)?(?:[xyz]|\d+[a-z])(?:\s*[+−-]\s*(?:\d+\s*)?(?:[xyz]|\d+[a-z]))?(?:\s*[+−-]\s*\d+)?(?![A-Za-z])|\([+-]?\d+\s*,\s*[+-]?\d+\))/gi;
+      let cursor = 0;
+      let match;
+      while ((match = expressionPattern.exec(text)) !== null) {
+        if (match.index > cursor) element.append(document.createTextNode(text.slice(cursor, match.index)));
+        const math = document.createElement("span");
+        math.className = "math-expression";
+        const latex = match[0]
+          .replace(/(\d+)\s*\/\s*(\d+)/g, "\\frac{$1}{$2}")
+          .replace(/[−]/g, "-")
+          .replace(/[×]/g, "\\times ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (window.katex) {
+          window.katex.render(latex, math, { throwOnError: false, output: "htmlAndMathml" });
+        } else {
+          math.textContent = match[0];
+        }
+        element.append(math);
+        cursor = match.index + match[0].length;
+      }
+      if (cursor < text.length) element.append(document.createTextNode(text.slice(cursor)));
+    }
+
+    function buildExamQuestions(count) {
+      const availableTopics = topics.filter((topic) => !topic.isExam);
+      const plan = [...availableTopics];
+      while (plan.length < count) plan.push(pick(availableTopics));
+      for (let index = plan.length - 1; index > 0; index -= 1) {
+        const swapIndex = randomInt(0, index);
+        [plan[index], plan[swapIndex]] = [plan[swapIndex], plan[index]];
+      }
+      const questions = [];
+      const seen = new Set();
+      const remainingByTopic = new Map(availableTopics.map((topic) => [topic.id, [...getQuestionBank(topic)]]));
+      while (questions.length < count) {
+        const topic = plan[questions.length] || pick(availableTopics);
+        const remaining = remainingByTopic.get(topic.id);
+        const question = remaining.splice(randomInt(0, remaining.length - 1), 1)[0];
+        if (!seen.has(question.prompt)) {
+          seen.add(question.prompt);
+          questions.push(question);
+        } else {
+          plan.push(pick(availableTopics));
+        }
+      }
+      return questions;
+    }
+
+    function getQuestionBank(topic) {
+      if (questionBanks.has(topic.id)) return questionBanks.get(topic.id);
+      const bank = [];
+      const seen = new Set();
+      let attempts = 0;
+      const maxAttempts = questionBankSize * 200;
+      while (bank.length < questionBankSize && attempts < maxAttempts) {
+        const kind = topic.kinds ? topic.kinds[attempts % topic.kinds.length] : undefined;
+        const question = topic.make(kind);
+        attempts += 1;
+        if (!seen.has(question.prompt)) {
+          seen.add(question.prompt);
+          bank.push(question);
+        }
+      }
+      if (bank.length <= 400) {
+        throw new Error(`${topic.label} question bank only generated ${bank.length} unique questions.`);
+      }
+      for (let index = bank.length - 1; index > 0; index -= 1) {
+        const swapIndex = randomInt(0, index);
+        [bank[index], bank[swapIndex]] = [bank[swapIndex], bank[index]];
+      }
+      questionBanks.set(topic.id, bank);
+      return bank;
+    }
+
+    function drawRandomQuestions(bank, count) {
+      const shuffled = [...bank];
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const swapIndex = randomInt(0, index);
+        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+      }
+      return shuffled.slice(0, count);
+    }
+
+    function updateProgress() {
+      const inputs = [...questionsContainer.querySelectorAll(".answer-input")];
+      const answered = inputs.filter((input) => input.value.trim() !== "").length;
+      progressFill.style.width = `${answered / Math.max(1, currentQuestions.length) * 100}%`;
+    }
+
+    questionsContainer.addEventListener("input", (event) => {
+      if (event.target.matches(".answer-input")) {
+        if (checked) {
+          checked = false;
+          quizFinishedAt = null;
+          saveImageButton.hidden = true;
+          result.textContent = "Answers changed — check them again.";
+          questionsContainer.querySelectorAll(".question-row").forEach((row) => row.classList.remove("correct", "incorrect"));
+          updateSessionPanel();
+        }
+        updateProgress();
+      }
+    });
+
+    function escapeXml(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;"
+      })[character]);
+    }
+
+    async function saveResultImage(score) {
+      const width = 1200;
+      const margin = 64;
+      const maxCharacters = 112;
+      let y = 300;
+      const elements = [
+        `<rect width="${width}" height="100%" fill="#141a30"/>`,
+        `<rect x="28" y="28" width="${width - 56}" height="235" rx="26" fill="#202641"/>`,
+        `<text x="${margin}" y="91" font-family="Arial,sans-serif" font-size="24" font-weight="700" fill="#a99eff">Mpho Simon Nthoesane&apos;s basic Mathematics</text>`,
+        `<text x="${margin}" y="143" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#edf0ff">${escapeXml(currentTopic.label)} result</text>`,
+        `<text x="${margin}" y="192" font-family="Arial,sans-serif" font-size="25" font-weight="700" fill="#edf0ff">${escapeXml(learnerName)} · ${score} / ${currentQuestions.length} correct</text>`,
+        `<text x="${margin}" y="226" font-family="Arial,sans-serif" font-size="17" fill="#a6acc7">Name saved: ${escapeXml(formatDateTime(nameSavedAt))}  |  Started: ${escapeXml(formatDateTime(quizStartedAt))}</text>`,
+        `<text x="${margin}" y="252" font-family="Arial,sans-serif" font-size="17" fill="#a6acc7">Finished: ${escapeXml(formatDateTime(quizFinishedAt))}  |  Duration: ${escapeXml(formatDuration(quizFinishedAt - quizStartedAt))}</text>`
+      ];
+
+      const wrap = (text, limit = maxCharacters) => {
+        const words = String(text).split(/\s+/);
+        const lines = [];
+        let line = "";
+        words.forEach((word) => {
+          if (line && `${line} ${word}`.length > limit) {
+            lines.push(line);
+            line = word;
+          } else {
+            line = line ? `${line} ${word}` : word;
+          }
+        });
+        if (line) lines.push(line);
+        return lines;
+      };
+      const addLines = (lines, x, fontSize, color, weight = 400, lineHeight = 25) => {
+        lines.forEach((line) => {
+          elements.push(`<text x="${x}" y="${y}" font-family="Arial,sans-serif" font-size="${fontSize}" font-weight="${weight}" fill="${color}">${escapeXml(line)}</text>`);
+          y += lineHeight;
+        });
+      };
+
+      currentQuestions.forEach((question, index) => {
+        const input = questionsContainer.querySelector(`#answer-${index}`);
+        const isCorrect = answersMatch(input.value, question.answer);
+        const questionLines = wrap(`${String(index + 1).padStart(2, "0")}. ${question.prompt}`);
+        const answerLines = wrap(`Your answer: ${input.value.trim() || "(blank)"}`, 104);
+        const outcomeLines = wrap(isCorrect ? "Result: Correct" : `Result: Incorrect · Correct answer: ${question.answer}`, 104);
+        const boxHeight = 24 + (questionLines.length + answerLines.length + outcomeLines.length) * 25 + 18;
+        elements.push(`<rect x="28" y="${y - 18}" width="${width - 56}" height="${boxHeight}" rx="16" fill="#202641" stroke="#343a59"/>`);
+        y += 15;
+        addLines(questionLines, margin, 18, "#edf0ff", 700, 25);
+        addLines(answerLines, margin + 24, 16, "#a6acc7", 400, 23);
+        addLines(outcomeLines, margin + 24, 16, isCorrect ? "#68d2a6" : "#ff8e9c", 700, 23);
+        y += 27;
+      });
+
+      const height = y + 45;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${elements.join("")}</svg>`;
+      const svgUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+      try {
+        const image = new Image();
+        image.src = svgUrl;
+        await image.decode();
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Canvas is unavailable in this browser.");
+        context.drawImage(image, 0, 0, width, height);
+        const pngBlob = await new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("The PNG image could not be created.")), "image/png");
+        });
+        const pngUrl = URL.createObjectURL(pngBlob);
+        const link = document.createElement("a");
+        const safeName = learnerName.replace(/[^\p{L}\p{N}-]+/gu, "-").replace(/^-|-$/g, "") || "learner";
+        link.href = pngUrl;
+        link.download = `${safeName}-${currentTopic.id}-results.png`;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(pngUrl), 10000);
+        imageStatus.textContent = "PNG result picture saved. You can save another copy with the button.";
+      } catch (error) {
+        imageStatus.textContent = `Could not create the PNG image: ${error.message}`;
+      } finally {
+        URL.revokeObjectURL(svgUrl);
+      }
+    }
+
+    quizForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      checked = true;
+      quizFinishedAt = Date.now();
+      let score = 0;
+      currentQuestions.forEach((question, index) => {
+        const row = questionsContainer.querySelector(`[data-index="${index}"]`);
+        const input = row.querySelector(".answer-input");
+        const feedback = row.querySelector(".feedback");
+        const isCorrect = answersMatch(input.value, question.answer);
+        row.classList.toggle("correct", isCorrect);
+        row.classList.toggle("incorrect", !isCorrect);
+        feedback.textContent = isCorrect ? "Correct!" : `Answer: ${question.answer}`;
+        if (isCorrect) score += 1;
+      });
+      result.innerHTML = `<strong>${score} / ${currentQuestions.length} correct</strong> · ${score === currentQuestions.length ? "Perfect score! Amazing work!" : score >= currentQuestions.length * 0.7 ? "Great job — keep it up!" : "Nice effort — try another round!"}`;
+      progressFill.style.width = "100%";
+      saveImageButton.hidden = false;
+      updateSessionPanel();
+      saveResultImage(score);
+    });
+
+    document.querySelector("#new-quiz").addEventListener("click", generateQuiz);
+    document.querySelector("#main-exam-button").addEventListener("click", () => {
+      currentTopic = topics.find((topic) => topic.isExam);
+      renderTopics();
+      generateQuiz();
+      quizCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    saveImageButton.addEventListener("click", () => {
+      if (checked) saveResultImage(currentQuestions.filter((question, index) => answersMatch(questionsContainer.querySelector(`#answer-${index}`).value, question.answer)).length);
+    });
+    nameForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const submittedName = learnerNameInput.value.trim();
+      if (!submittedName) {
+        learnerNameInput.focus();
+        return;
+      }
+      learnerName = submittedName;
+      nameSavedAt = Date.now();
+      nameGate.hidden = true;
+      topicMenu.hidden = false;
+      examLaunch.hidden = false;
+      quizCard.hidden = false;
+      renderTopics();
+      generateQuiz();
+      window.setInterval(updateSessionPanel, 1000);
+    });
+    renderTopics();
+  </script>
+</body>
+</html>
